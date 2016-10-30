@@ -12,7 +12,7 @@ namespace ShuntingYardAlgorithm
         Right
     }
 
-    public class Operator
+    public class Operator : IToken
     {
         private string _text;
         private int _precedence;

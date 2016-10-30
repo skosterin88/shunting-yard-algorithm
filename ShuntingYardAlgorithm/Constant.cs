@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ShuntingYardAlgorithm
 {
-    public class Constant
+    public class Constant : IToken
     {
         private string _text;
         private double _value;

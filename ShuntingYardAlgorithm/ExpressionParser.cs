@@ -9,26 +9,8 @@ namespace ShuntingYardAlgorithm
 {
     public class ExpressionParser
     {
-        private readonly Operator[] _operators = new Operator[]{
-            new Operator("+", 1, 2, OperatorAssociativity.Left),
-            new Operator("-", 1, 2, OperatorAssociativity.Left),
-            new Operator("*", 2, 2, OperatorAssociativity.Left),
-            new Operator("/", 2, 2, OperatorAssociativity.Left),
-            new Operator("^", 3, 2, OperatorAssociativity.Right),
-            new Operator("sqrt", 4, 1, OperatorAssociativity.Left),
-            new Operator("sin", 4, 1,  OperatorAssociativity.Left),
-            new Operator("cos", 4, 1,  OperatorAssociativity.Left),
-            new Operator("tg", 4, 1,  OperatorAssociativity.Left),
-            new Operator("ctg", 4, 1,  OperatorAssociativity.Left),
-            new Operator("ln", 4, 1,  OperatorAssociativity.Left),
-            new Operator("log", 4, 1,  OperatorAssociativity.Left),
-            new Operator("exp", 4, 1,  OperatorAssociativity.Left)
-        };
-
-        private readonly Constant[] _constants = new Constant[]{
-            new Constant("pi",Math.PI),
-            new Constant("e",Math.E)
-        };
+        private Operator[] _operators = OperatorsCollection.Operators;
+        private Constant[] _constants = ConstantsCollection.Constants;
 
         private int GetOperatorPrecedence(string operatorText)
         {
@@ -188,7 +170,7 @@ namespace ShuntingYardAlgorithm
 
         public Queue<string> InfixToPostfix(string infixExpression)
         {
-            string postfixExpression = "";
+
             Stack<string> operatorsStack = new Stack<string>();
             Queue<string> outputQueue = new Queue<string>();
 
@@ -202,17 +184,19 @@ namespace ShuntingYardAlgorithm
             }
             else
             {
-                for (int i = 0; i < infixExpression.Length; i++)
+                string exprWithoutSpaces = infixExpression.Replace(" ", "");
+                string postfixExpression = "";
+                for (int i = 0; i < exprWithoutSpaces.Length; i++)
                 {
-                    if (char.IsNumber(infixExpression[i]))
+                    if (char.IsNumber(exprWithoutSpaces[i]))
                     {
-                        string currNumberString = ReadValueString(infixExpression, i);
+                        string currNumberString = ReadValueString(exprWithoutSpaces, i);
                         outputQueue.Enqueue(currNumberString);
                         i += currNumberString.Length - 1;
                     }
                     else
                     {
-                        string currOperator = ReadOperator(infixExpression, i);
+                        string currOperator = ReadOperator(exprWithoutSpaces, i);
                         if (currOperator != "")
                         {
                             OperatorAssociativity assoc = GetOperatorAssociativity(currOperator);
@@ -241,11 +225,11 @@ namespace ShuntingYardAlgorithm
                         }
                         else
                         {
-                            if (infixExpression[i] == '(')
+                            if (exprWithoutSpaces[i] == '(')
                             {
-                                operatorsStack.Push(infixExpression[i].ToString());
+                                operatorsStack.Push(exprWithoutSpaces[i].ToString());
                             }
-                            else if (infixExpression[i] == ')')
+                            else if (exprWithoutSpaces[i] == ')')
                             {
                                 while (operatorsStack.Peek() != "(")
                                 {
@@ -263,7 +247,7 @@ namespace ShuntingYardAlgorithm
                             }
                             else
                             {
-                                string currConstant = ReadConstant(infixExpression, i);
+                                string currConstant = ReadConstant(exprWithoutSpaces, i);
                                 if (currConstant != "")
                                 {
                                     outputQueue.Enqueue(GetConstantValue(currConstant).ToString(CultureInfo.InvariantCulture));

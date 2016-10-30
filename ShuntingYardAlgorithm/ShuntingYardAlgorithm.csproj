@@ -45,9 +45,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constant.cs" />
+    <Compile Include="ConstantsCollection.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="ExpressionParser.cs" />
+    <Compile Include="IToken.cs" />
     <Compile Include="Operator.cs" />
+    <Compile Include="OperatorsCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
