@@ -5,3 +5,10 @@ C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm.Tests\bin\Deb
 C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm.Tests\obj\Debug\ShuntingYardAlgorithm.Tests.csprojResolveAssemblyReference.cache
 C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm.Tests\obj\Debug\ShuntingYardAlgorithm.Tests.dll
 C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm.Tests\obj\Debug\ShuntingYardAlgorithm.Tests.pdb
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\bin\Debug\ShuntingYardAlgorithm.Tests.dll
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\bin\Debug\ShuntingYardAlgorithm.Tests.pdb
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\bin\Debug\ShuntingYardAlgorithm.dll
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\bin\Debug\ShuntingYardAlgorithm.pdb
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\obj\Debug\ShuntingYardAlgorithm.Tests.csprojResolveAssemblyReference.cache
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\obj\Debug\ShuntingYardAlgorithm.Tests.dll
+c:\Sergey\VSNetSamples\shunting-yard-algorithm\ShuntingYardAlgorithm.Tests\obj\Debug\ShuntingYardAlgorithm.Tests.pdb

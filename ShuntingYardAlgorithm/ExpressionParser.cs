@@ -3,95 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ShuntingYardAlgorithm
 {
-
-    public enum OperatorAssociativity
-    {
-        Left,
-        Right
-    }
-
-    public class Constant
-    {
-        private string _text;
-        private double _value;
-
-        public string Text
-        {
-            get
-            {
-                return _text;
-            }
-        }
-
-        public double Value
-        {
-            get
-            {
-                return _value;
-            }
-        }
-
-        public Constant(string text, double value)
-        {
-            _text = text;
-            _value = value;
-        }
-    }
-
-    public class Operator
-    {
-        private string _text;
-        private int _precedence;
-        private OperatorAssociativity _assoc;
-        private int _qArguments;
-
-        public string Text
-        {
-            get
-            {
-                return _text;
-            }
-        }
-
-        public int Precedence
-        {
-            get
-            {
-                return _precedence;
-            }
-        }
-
-        public OperatorAssociativity Associativity
-        {
-            get
-            {
-                return _assoc;
-            }
-        }
-
-        public int ArgumentsCount
-        {
-            get
-            {
-                return _qArguments;
-            }
-        }
-
-        public Operator(string text, int precedence, int qArguments, OperatorAssociativity assoc)
-        {
-            _text = text;
-            _precedence = precedence;
-            _qArguments = qArguments;
-            _assoc = assoc;
-        }
-    }
-
     public class ExpressionParser
     {
         private readonly Operator[] _operators = new Operator[]{
@@ -281,7 +196,7 @@ namespace ShuntingYardAlgorithm
             {
                 throw new NullExpressionException("Null expression to parse!");
             }
-            else if (infixExpression == "") 
+            else if (infixExpression == "")
             {
                 throw new EmptyExpressionException("Empty expression to parse!");
             }
@@ -505,11 +420,4 @@ namespace ShuntingYardAlgorithm
 
     }
 
-    class Program
-    {
-        static void Main(string[] args)
-        {
-
-        }
-    }
 }
