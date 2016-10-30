@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ShuntingYardAlgorithm
 {
+
     public enum OperatorAssociativity
     {
         Left,
@@ -90,27 +92,9 @@ namespace ShuntingYardAlgorithm
         }
     }
 
-    class Program
+    public class ExpressionParser
     {
-        //private static readonly string[] _operators = new string[]{
-        //    "+",
-        //    "-",
-        //    "*",
-        //    "/",
-        //    "^",
-        //    "sqrt",
-        //    "sin",
-        //    "cos",
-        //    "tg",
-        //    "ctg",
-        //    "ln",
-        //    "log",
-        //    "exp",
-        //    //"(",
-        //    //")"
-        //};
-
-        private static readonly Operator[] _operators = new Operator[]{
+        private readonly Operator[] _operators = new Operator[]{
             new Operator("+", 1, 2, OperatorAssociativity.Left),
             new Operator("-", 1, 2, OperatorAssociativity.Left),
             new Operator("*", 2, 2, OperatorAssociativity.Left),
@@ -126,12 +110,12 @@ namespace ShuntingYardAlgorithm
             new Operator("exp", 4, 1,  OperatorAssociativity.Left)
         };
 
-        private static readonly Constant[] _constants = new Constant[]{
+        private readonly Constant[] _constants = new Constant[]{
             new Constant("pi",Math.PI),
             new Constant("e",Math.E)
         };
-        
-        private static int GetOperatorPrecedence(string operatorText)
+
+        private int GetOperatorPrecedence(string operatorText)
         {
             string[] opTexts = _operators.Select(op => op.Text).ToArray();
             if (opTexts.Contains(operatorText))
@@ -143,24 +127,24 @@ namespace ShuntingYardAlgorithm
             return -1;
         }
 
-        private static int GetMaxOperatorLength()
+        private int GetMaxOperatorLength()
         {
             return _operators.Max(op => op.Text.Length);
         }
 
-        private static bool IsOperator(string str)
+        private bool IsOperator(string str)
         {
             string[] operatorTexts = _operators.Select(op => op.Text).ToArray();
             return operatorTexts.Contains(str);
         }
 
-        private static bool IsConstant(string str)
+        private bool IsConstant(string str)
         {
             string[] constantTexts = _constants.Select(c => c.Text).ToArray();
             return constantTexts.Contains(str);
         }
 
-        static string ReadValueString(string infixExpression, int index)
+        private string ReadValueString(string infixExpression, int index)
         {
             string valStr = "";
 
@@ -173,7 +157,7 @@ namespace ShuntingYardAlgorithm
                     var temp = infixExpression.Substring(index, infixExpression.Length - i);
                     double val = 0.0d;
                     bool isDouble = double.TryParse(temp, NumberStyles.Any, CultureInfo.InvariantCulture, out val);
-                    
+
                     if (isDouble)
                     {
                         if (temp[temp.Length - 1] == '+' || temp[temp.Length - 1] == '-')
@@ -185,11 +169,11 @@ namespace ShuntingYardAlgorithm
                     }
                 }
             }
-            
+
             return valStr;
         }
 
-        static string ReadConstant(string infixExpression, int index)
+        private string ReadConstant(string infixExpression, int index)
         {
             string valStr = "";
 
@@ -212,7 +196,7 @@ namespace ShuntingYardAlgorithm
             return valStr;
         }
 
-        static string ReadOperator(string infixExpression, int index)
+        private string ReadOperator(string infixExpression, int index)
         {
             string op = "";
 
@@ -238,7 +222,7 @@ namespace ShuntingYardAlgorithm
             return op;
         }
 
-        static OperatorAssociativity GetOperatorAssociativity(string operatorText)
+        private OperatorAssociativity GetOperatorAssociativity(string operatorText)
         {
             OperatorAssociativity assoc = OperatorAssociativity.Left;
 
@@ -254,7 +238,7 @@ namespace ShuntingYardAlgorithm
             return assoc;
         }
 
-        static int GetOperatorArgumentsCount(string operatorText)
+        private int GetOperatorArgumentsCount(string operatorText)
         {
             int qArguments = 0;
 
@@ -271,7 +255,7 @@ namespace ShuntingYardAlgorithm
             return qArguments;
         }
 
-        static double GetConstantValue(string constantText)
+        private double GetConstantValue(string constantText)
         {
             double constVal = 0.0;
 
@@ -287,78 +271,119 @@ namespace ShuntingYardAlgorithm
             return constVal;
         }
 
-        static Queue<string> InfixToPostfix(string infixExpression)
+        public Queue<string> InfixToPostfix(string infixExpression)
         {
             string postfixExpression = "";
             Stack<string> operatorsStack = new Stack<string>();
             Queue<string> outputQueue = new Queue<string>();
 
-            for (int i = 0; i < infixExpression.Length; i++)
+            if (infixExpression == null)
             {
-                if (char.IsNumber(infixExpression[i]))
+                throw new NullExpressionException("Null expression to parse!");
+            }
+            else if (infixExpression == "") 
+            {
+                throw new EmptyExpressionException("Empty expression to parse!");
+            }
+            else
+            {
+                for (int i = 0; i < infixExpression.Length; i++)
                 {
-                    string currNumberString = ReadValueString(infixExpression, i);
-                    outputQueue.Enqueue(currNumberString);
-                    i += currNumberString.Length-1;
-                }
-                else
-                {
-                    string currOperator = ReadOperator(infixExpression, i);
-                    if (currOperator != "")
+                    if (char.IsNumber(infixExpression[i]))
                     {
-                        OperatorAssociativity assoc = GetOperatorAssociativity(currOperator);
-                        if (operatorsStack.Count == 0)
+                        string currNumberString = ReadValueString(infixExpression, i);
+                        outputQueue.Enqueue(currNumberString);
+                        i += currNumberString.Length - 1;
+                    }
+                    else
+                    {
+                        string currOperator = ReadOperator(infixExpression, i);
+                        if (currOperator != "")
                         {
-                            operatorsStack.Push(currOperator);
-                        }
-                        else
-                        {
-                            string topOperator = operatorsStack.Peek();
-                            int stackTopPrecedence = GetOperatorPrecedence(topOperator);
-                            int currPrecedence = GetOperatorPrecedence(currOperator);
-
-                            if (currPrecedence <= stackTopPrecedence && assoc == OperatorAssociativity.Left || 
-                                currPrecedence < stackTopPrecedence && assoc == OperatorAssociativity.Right)
+                            OperatorAssociativity assoc = GetOperatorAssociativity(currOperator);
+                            if (operatorsStack.Count == 0)
                             {
-                                string poppedOperator = operatorsStack.Pop();
-                                outputQueue.Enqueue(poppedOperator);
                                 operatorsStack.Push(currOperator);
                             }
                             else
                             {
-                                operatorsStack.Push(currOperator);
+                                string topOperator = operatorsStack.Peek();
+                                int stackTopPrecedence = GetOperatorPrecedence(topOperator);
+                                int currPrecedence = GetOperatorPrecedence(currOperator);
+
+                                if (currPrecedence <= stackTopPrecedence && assoc == OperatorAssociativity.Left ||
+                                    currPrecedence < stackTopPrecedence && assoc == OperatorAssociativity.Right)
+                                {
+                                    string poppedOperator = operatorsStack.Pop();
+                                    outputQueue.Enqueue(poppedOperator);
+                                    operatorsStack.Push(currOperator);
+                                }
+                                else
+                                {
+                                    operatorsStack.Push(currOperator);
+                                }
                             }
-                        }
-                    }
-                    else
-                    {
-                        if (infixExpression[i] == '(')
-                        {
-                            operatorsStack.Push(infixExpression[i].ToString());
-                        }
-                        else if (infixExpression[i] == ')')
-                        {
-                            while (operatorsStack.Peek() != "(")
-                            {
-                                outputQueue.Enqueue(operatorsStack.Pop());
-                            }
-                            operatorsStack.Pop();
-                            //if (IsOperator(operatorsStack.Peek()))
-                            //{
-                            //    outputQueue.Enqueue(operatorsStack.Pop());
-                            //}
                         }
                         else
                         {
-                            string currConstant = ReadConstant(infixExpression, i);
-                            if (currConstant != "")
+                            if (infixExpression[i] == '(')
                             {
-                                outputQueue.Enqueue(GetConstantValue(currConstant).ToString(CultureInfo.InvariantCulture));
-                                i += currConstant.Length - 1;
+                                operatorsStack.Push(infixExpression[i].ToString());
+                            }
+                            else if (infixExpression[i] == ')')
+                            {
+                                while (operatorsStack.Peek() != "(")
+                                {
+                                    outputQueue.Enqueue(operatorsStack.Pop());
+                                    if (operatorsStack.Count == 1 && operatorsStack.Peek() != "(")
+                                    {
+                                        throw new ParenthesesMismatchException("Parentheses mismatch!");
+                                    }
+                                }
+                                operatorsStack.Pop();
+                                //if (IsOperator(operatorsStack.Peek()))
+                                //{
+                                //    outputQueue.Enqueue(operatorsStack.Pop());
+                                //}
+                            }
+                            else
+                            {
+                                string currConstant = ReadConstant(infixExpression, i);
+                                if (currConstant != "")
+                                {
+                                    outputQueue.Enqueue(GetConstantValue(currConstant).ToString(CultureInfo.InvariantCulture));
+                                    i += currConstant.Length - 1;
+                                }
                             }
                         }
                     }
+
+                    for (int j = 0; j < outputQueue.Count; j++)
+                    {
+                        Debug.Write(outputQueue.ElementAt(j).ToString() + " ");
+                    }
+                    Debug.WriteLine("");
+                    Debug.Write("Operators Stack: ");
+                    for (int j = 0; j < operatorsStack.Count; j++)
+                    {
+                        Debug.Write(operatorsStack.ElementAt(j).ToString() + " ");
+                    }
+                    Debug.WriteLine("");
                 }
+
+
+                while (operatorsStack.Count > 0)
+                {
+                    if (operatorsStack.Peek() == "(" || operatorsStack.Peek() == ")")
+                    {
+                        throw new ParenthesesMismatchException("Parentheses mismatch!");
+                    }
+                    else
+                    {
+                        outputQueue.Enqueue(operatorsStack.Pop());
+                    }
+                }
+
 
                 for (int j = 0; j < outputQueue.Count; j++)
                 {
@@ -373,31 +398,10 @@ namespace ShuntingYardAlgorithm
                 Debug.WriteLine("");
             }
 
-            if (operatorsStack.Count > 0)
-            {
-                while (operatorsStack.Count > 0)
-                {
-                    outputQueue.Enqueue(operatorsStack.Pop());
-                }
-            }
-
-            for (int j = 0; j < outputQueue.Count; j++)
-            {
-                Debug.Write(outputQueue.ElementAt(j).ToString() + " ");
-            }
-            Debug.WriteLine("");
-            Debug.Write("Operators Stack: ");
-            for (int j = 0; j < operatorsStack.Count; j++)
-            {
-                Debug.Write(operatorsStack.ElementAt(j).ToString() + " ");
-            }
-            Debug.WriteLine("");
-
-
-                return outputQueue;
+            return outputQueue;
         }
 
-        static double EvaluateOperator(double[] arguments, string operatorText)
+        private double EvaluateOperator(double[] arguments, string operatorText)
         {
             if (operatorText == "+")
             {
@@ -417,7 +421,7 @@ namespace ShuntingYardAlgorithm
             }
             else if (operatorText == "^")
             {
-                return Math.Pow(arguments[0],arguments[1]);
+                return Math.Pow(arguments[0], arguments[1]);
             }
             else if (operatorText == "sqrt")
             {
@@ -437,7 +441,7 @@ namespace ShuntingYardAlgorithm
             }
             else if (operatorText == "ctg")
             {
-                return 1.0/Math.Tan(arguments[0]);
+                return 1.0 / Math.Tan(arguments[0]);
             }
             else if (operatorText == "ln")
             {
@@ -455,7 +459,7 @@ namespace ShuntingYardAlgorithm
             return 0.0;
         }
 
-        static double EvalPostfix(Queue<string> postfixQueue)
+        public double EvalPostfix(Queue<string> postfixQueue)
         {
             List<string> queueElements = postfixQueue.ToList();
             Stack<double> evalStack = new Stack<double>();
@@ -475,12 +479,12 @@ namespace ShuntingYardAlgorithm
                     int qArgsCurrOperator = GetOperatorArgumentsCount(currElement);
                     if (evalStack.Count < qArgsCurrOperator)
                     {
-                        throw new Exception("Insufficient arguments count for operator" + " " + currElement + "!" + " " + "Arguments required" + ": " + qArgsCurrOperator.ToString());
+                        throw new InsufficientOperatorArgumentsException("Insufficient arguments count for operator" + " " + currElement + "!" + " " + "Arguments required" + ": " + qArgsCurrOperator.ToString());
                     }
                     else
                     {
                         double[] currOperatorArgs = new double[qArgsCurrOperator];
-                        for (int j = qArgsCurrOperator-1; j >= 0; j--)
+                        for (int j = qArgsCurrOperator - 1; j >= 0; j--)
                         {
                             currOperatorArgs[j] = evalStack.Pop();
                         }
@@ -499,20 +503,13 @@ namespace ShuntingYardAlgorithm
             return result;
         }
 
+    }
 
+    class Program
+    {
         static void Main(string[] args)
         {
 
-            //string expr = "3+4*2/(1-5)^2^3";
-            //string expr = "(cos(3.14159/2))^2+9/2";
-            string expr = "(cos(pi/2))^2+9/2*e^(ln(0.5))";
-            //string expr = "5+((1+2)*4)-3";
-
-            string op = ReadOperator(expr, 2);
-
-
-            Queue<string> postfix = InfixToPostfix(expr);
-            double result = EvalPostfix(postfix);
         }
     }
 }
