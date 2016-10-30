@@ -1,0 +1,6 @@
+C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm\bin\Debug\ShuntingYardAlgorithm.exe.config
+C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm\bin\Debug\ShuntingYardAlgorithm.exe
+C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm\bin\Debug\ShuntingYardAlgorithm.pdb
+C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm\obj\Debug\ShuntingYardAlgorithm.csprojResolveAssemblyReference.cache
+C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm\obj\Debug\ShuntingYardAlgorithm.exe
+C:\Sergey\VSNetSamples\ShuntingYardAlgorithm\ShuntingYardAlgorithm\obj\Debug\ShuntingYardAlgorithm.pdb
