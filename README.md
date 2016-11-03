@@ -7,5 +7,5 @@ Supported tokens:
 * constants(pi, e)
 
 Numbers should be entered with "." as a decimal separator (1.5).
-No whitespaces are allowed.
+Whitespaces are allowed - they will be automatically deleted by the program.
 No variables are supported at the moment. Planning to include variables support.
