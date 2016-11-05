@@ -18,6 +18,7 @@ namespace ShuntingYardAlgorithm
         private int _precedence;
         private OperatorAssociativity _assoc;
         private int _qArguments;
+        private Func<double, double, double> _opFunc;
 
         public string Text
         {
@@ -43,6 +44,14 @@ namespace ShuntingYardAlgorithm
             }
         }
 
+        public Func<double, double, double> OperatorFunction
+        {
+            get
+            {
+                return _opFunc;
+            }
+        }
+
         public int ArgumentsCount
         {
             get
@@ -51,12 +60,13 @@ namespace ShuntingYardAlgorithm
             }
         }
 
-        public Operator(string text, int precedence, int qArguments, OperatorAssociativity assoc)
+        public Operator(string text, int precedence, int qArguments, OperatorAssociativity assoc, Func<double,double,double> opFunc)
         {
             _text = text;
             _precedence = precedence;
             _qArguments = qArguments;
             _assoc = assoc;
+            _opFunc = opFunc;
         }
     }
 
