@@ -54,8 +54,8 @@ namespace ShuntingYardAlgorithm
                     var temp = infixExpression.Substring(index, infixExpression.Length - i);
                     double val = 0.0d;
                     bool isDouble = double.TryParse(temp, NumberStyles.Any, CultureInfo.InvariantCulture, out val);
-
-                    if (isDouble)
+                    
+                    if (isDouble && temp[0] != '+' && temp[0] != '-' && temp[0] != '(' && temp[temp.Length-1] != ')')
                     {
                         if (temp[temp.Length - 1] == '+' || temp[temp.Length - 1] == '-')
                         {
@@ -93,7 +93,7 @@ namespace ShuntingYardAlgorithm
             return valStr;
         }
 
-        private string ReadOperator(string infixExpression, int index)
+        private string ReadCurrentOperator(string infixExpression, int index)
         {
             string op = "";
 
@@ -168,11 +168,74 @@ namespace ShuntingYardAlgorithm
             return constVal;
         }
 
-        public Queue<string> InfixToPostfix(string infixExpression)
+        private IToken ReadCurrentToken(string infixExpression, int index)
+        {
+            string currNumberString = ReadValueString(infixExpression, index);
+            string currOperatorString = ReadCurrentOperator(infixExpression, index);
+            string currConstantString = ReadConstant(infixExpression, index);
+
+            bool isNumber = (currNumberString != "");
+            bool isOperator = (currOperatorString != "");
+            bool isConstant = (currConstantString != "");
+
+            //if (infixExpression[index] != '(' && infixExpression[index] != ')')
+            //{
+                if (isNumber)
+                {
+                    double currNumber = double.Parse(currNumberString, NumberStyles.Any, CultureInfo.InvariantCulture);
+                    return new NumberToken(currNumberString, currNumber);
+                }
+                else if (isOperator)
+                {
+                    int inxCurrOperator = -1;
+                    for (int i = 0; i < _operators.Length; i++)
+                    {
+                        if (_operators[i].Text == currOperatorString)
+                        {
+                            inxCurrOperator = i;
+                            break;
+                        }
+                    }
+                    return _operators[inxCurrOperator];
+                }
+                else if (isConstant)
+                {
+                    int inxCurrConstant = -1;
+                    for (int i = 0; i < _constants.Length; i++)
+                    {
+                        if (_constants[i].Text == currConstantString)
+                        {
+                            inxCurrConstant = i;
+                            break;
+                        }
+                    }
+                    return _constants[inxCurrConstant];
+                }
+            //}
+
+            return null;
+        }
+
+        public IToken GetOperatorByText(string opText)
+        {
+            int inxOperator = -1;
+            for (int j = 0; j < _operators.Length; j++)
+            {
+                if (_operators[j].Text == opText)
+                {
+                    inxOperator = j;
+                    break;
+                }
+            }
+
+            return _operators[inxOperator];
+        }
+
+        public Queue<IToken> InfixToPostfix(string infixExpression)
         {
 
             Stack<string> operatorsStack = new Stack<string>();
-            Queue<string> outputQueue = new Queue<string>();
+            Queue<IToken> outputQueue = new Queue<IToken>();
 
             if (infixExpression == null)
             {
@@ -185,91 +248,122 @@ namespace ShuntingYardAlgorithm
             else
             {
                 string exprWithoutSpaces = infixExpression.Replace(" ", "");
-                string postfixExpression = "";
                 for (int i = 0; i < exprWithoutSpaces.Length; i++)
                 {
-                    if (char.IsNumber(exprWithoutSpaces[i]))
+                    IToken currToken = ReadCurrentToken(exprWithoutSpaces, i);
+                    if (currToken is NumberToken)
                     {
-                        string currNumberString = ReadValueString(exprWithoutSpaces, i);
-                        outputQueue.Enqueue(currNumberString);
-                        i += currNumberString.Length - 1;
+                        //string currNumberString = ReadValueString(exprWithoutSpaces, i);
+                        outputQueue.Enqueue(currToken);
+                        i += currToken.Text.Length - 1;
                     }
-                    else
+                    else if (currToken is Operator)
                     {
-                        string currOperator = ReadOperator(exprWithoutSpaces, i);
-                        if (currOperator != "")
-                        {
-                            OperatorAssociativity assoc = GetOperatorAssociativity(currOperator);
-                            if (operatorsStack.Count == 0)
-                            {
-                                operatorsStack.Push(currOperator);
-                            }
-                            else
-                            {
-                                string topOperator = operatorsStack.Peek();
-                                int stackTopPrecedence = GetOperatorPrecedence(topOperator);
-                                int currPrecedence = GetOperatorPrecedence(currOperator);
+                        OperatorAssociativity assoc = (currToken as Operator).Associativity;
+                        
+                        //else
+                        //{
+                        //    string topOperator = operatorsStack.Peek();
+                        //    int stackTopPrecedence = GetOperatorPrecedence(topOperator);
+                        //    int currPrecedence = GetOperatorPrecedence(currToken.Text);
 
-                                if (currPrecedence <= stackTopPrecedence && assoc == OperatorAssociativity.Left ||
-                                    currPrecedence < stackTopPrecedence && assoc == OperatorAssociativity.Right)
-                                {
-                                    string poppedOperator = operatorsStack.Pop();
-                                    outputQueue.Enqueue(poppedOperator);
-                                    operatorsStack.Push(currOperator);
-                                }
-                                else
-                                {
-                                    operatorsStack.Push(currOperator);
-                                }
-                            }
+                        //    if (currPrecedence <= stackTopPrecedence && assoc == OperatorAssociativity.Left ||
+                        //        currPrecedence < stackTopPrecedence && assoc == OperatorAssociativity.Right)
+                        //    {
+                        //        string poppedOperatorString = operatorsStack.Pop();
+
+                        //        IToken poppedOperator = GetOperatorByText(poppedOperatorString);
+
+                        //        outputQueue.Enqueue(poppedOperator);
+                        //        operatorsStack.Push(currToken.Text);
+
+                        //    }
+                        //    else
+                        //    {
+                        //        operatorsStack.Push(currToken.Text);
+                        //    }
+                        //}
+
+                        bool isFinish = false;
+                        if (operatorsStack.Count == 0)
+                        {
+                            operatorsStack.Push(currToken.Text);
                         }
                         else
                         {
-                            if (exprWithoutSpaces[i] == '(')
+                            while (!isFinish)
                             {
-                                operatorsStack.Push(exprWithoutSpaces[i].ToString());
-                            }
-                            else if (exprWithoutSpaces[i] == ')')
-                            {
-                                while (operatorsStack.Peek() != "(")
+                                string topOperator = operatorsStack.Peek();
+                                if (IsOperator(topOperator))
                                 {
-                                    outputQueue.Enqueue(operatorsStack.Pop());
-                                    if (operatorsStack.Count == 1 && operatorsStack.Peek() != "(")
+                                    int stackTopPrecedence = GetOperatorPrecedence(topOperator);
+                                    int currPrecedence = GetOperatorPrecedence(currToken.Text);
+
+                                    if (currPrecedence <= stackTopPrecedence && assoc == OperatorAssociativity.Left ||
+                                        currPrecedence < stackTopPrecedence && assoc == OperatorAssociativity.Right)
                                     {
-                                        throw new ParenthesesMismatchException("Parentheses mismatch!");
+                                        string poppedOperatorString = operatorsStack.Pop();
+
+                                        IToken poppedOperator = GetOperatorByText(poppedOperatorString);
+
+                                        outputQueue.Enqueue(poppedOperator);
+                                    }
+                                    else
+                                    {
+                                        isFinish = true;
+                                    }
+
+                                    if (operatorsStack.Count > 0)
+                                    {
+                                        topOperator = operatorsStack.Peek();
+                                    }
+                                    else
+                                    {
+                                        isFinish = true;
                                     }
                                 }
-                                operatorsStack.Pop();
-                                //if (IsOperator(operatorsStack.Peek()))
-                                //{
-                                //    outputQueue.Enqueue(operatorsStack.Pop());
-                                //}
-                            }
-                            else
-                            {
-                                string currConstant = ReadConstant(exprWithoutSpaces, i);
-                                if (currConstant != "")
+                                else
                                 {
-                                    outputQueue.Enqueue(GetConstantValue(currConstant).ToString(CultureInfo.InvariantCulture));
-                                    i += currConstant.Length - 1;
+                                    isFinish = true;
                                 }
                             }
+                            operatorsStack.Push(currToken.Text);
+
+                            i += currToken.Text.Length - 1;
                         }
                     }
+                    else if (currToken is Constant)
+                    {
+                        outputQueue.Enqueue(currToken);
+                        i += currToken.Text.Length - 1;
+                    }
+                    else
+                    {
+                        if (exprWithoutSpaces[i] == '(')
+                        {
+                            operatorsStack.Push(exprWithoutSpaces[i].ToString());
+                        }
+                        else if (exprWithoutSpaces[i] == ')')
+                        {
+                            while (operatorsStack.Peek() != "(")
+                            {
+                                outputQueue.Enqueue(GetOperatorByText(operatorsStack.Pop()));
+                                if (operatorsStack.Count == 1 && operatorsStack.Peek() != "(")
+                                {
+                                    throw new ParenthesesMismatchException("Parentheses mismatch!");
+                                }
+                            }
+                            operatorsStack.Pop();
+                            //if (IsOperator(operatorsStack.Peek()))
+                            //{
+                            //    outputQueue.Enqueue(operatorsStack.Pop());
+                            //}
+                        }
 
-                    for (int j = 0; j < outputQueue.Count; j++)
-                    {
-                        Debug.Write(outputQueue.ElementAt(j).ToString() + " ");
                     }
-                    Debug.WriteLine("");
-                    Debug.Write("Operators Stack: ");
-                    for (int j = 0; j < operatorsStack.Count; j++)
-                    {
-                        Debug.Write(operatorsStack.ElementAt(j).ToString() + " ");
-                    }
-                    Debug.WriteLine("");
+
                 }
-
+                      
 
                 while (operatorsStack.Count > 0)
                 {
@@ -279,22 +373,10 @@ namespace ShuntingYardAlgorithm
                     }
                     else
                     {
-                        outputQueue.Enqueue(operatorsStack.Pop());
+                        outputQueue.Enqueue(GetOperatorByText(operatorsStack.Pop()));
                     }
                 }
 
-
-                for (int j = 0; j < outputQueue.Count; j++)
-                {
-                    Debug.Write(outputQueue.ElementAt(j).ToString() + " ");
-                }
-                Debug.WriteLine("");
-                Debug.Write("Operators Stack: ");
-                for (int j = 0; j < operatorsStack.Count; j++)
-                {
-                    Debug.Write(operatorsStack.ElementAt(j).ToString() + " ");
-                }
-                Debug.WriteLine("");
             }
 
             return outputQueue;
@@ -302,65 +384,29 @@ namespace ShuntingYardAlgorithm
 
         private double EvaluateOperator(double[] arguments, string operatorText)
         {
-            if (operatorText == "+")
+            for (int i = 0; i < _operators.Length; i++)
             {
-                return arguments[0] + arguments[1];
-            }
-            else if (operatorText == "-")
-            {
-                return arguments[0] - arguments[1];
-            }
-            else if (operatorText == "*")
-            {
-                return arguments[0] * arguments[1];
-            }
-            else if (operatorText == "/")
-            {
-                return arguments[0] / arguments[1];
-            }
-            else if (operatorText == "^")
-            {
-                return Math.Pow(arguments[0], arguments[1]);
-            }
-            else if (operatorText == "sqrt")
-            {
-                return Math.Sqrt(arguments[0]);
-            }
-            else if (operatorText == "sin")
-            {
-                return Math.Sin(arguments[0]);
-            }
-            else if (operatorText == "cos")
-            {
-                return Math.Cos(arguments[0]);
-            }
-            else if (operatorText == "tg")
-            {
-                return Math.Tan(arguments[0]);
-            }
-            else if (operatorText == "ctg")
-            {
-                return 1.0 / Math.Tan(arguments[0]);
-            }
-            else if (operatorText == "ln")
-            {
-                return Math.Log(arguments[0]);
-            }
-            else if (operatorText == "log")
-            {
-                return Math.Log10(arguments[0]);
-            }
-            else if (operatorText == "exp")
-            {
-                return Math.Exp(arguments[0]);
+                if (_operators[i].Text == operatorText)
+                {
+                    if (arguments.Length < _operators[i].ArgumentsCount){
+                        throw new InsufficientOperatorArgumentsException("Insufficient arguments count for operator" + " " + operatorText + "!" + " " + "Arguments required" + ": " + _operators[i].ArgumentsCount.ToString());
+                    }
+                    if (arguments.Length == 1)
+                    {
+                        return _operators[i].OperatorFunction(arguments[0], 0.0);
+                    }
+                    else if (arguments.Length == 2)
+                    {
+                        return _operators[i].OperatorFunction(arguments[0], arguments[1]);
+                    }
+                }
             }
 
             return 0.0;
         }
 
-        public double EvalPostfix(Queue<string> postfixQueue)
+        public double EvalPostfix(Queue<IToken> postfixQueue)
         {
-            List<string> queueElements = postfixQueue.ToList();
             Stack<double> evalStack = new Stack<double>();
             double result = 0.0;
 
@@ -368,17 +414,21 @@ namespace ShuntingYardAlgorithm
 
             while (postfixQueue.Count > 0)
             {
-                string currElement = postfixQueue.Dequeue();
-                if (!IsOperator(currElement))
+                IToken currElement = postfixQueue.Dequeue();
+                if (currElement is NumberToken)
                 {
-                    evalStack.Push(double.Parse(currElement, NumberStyles.Any, CultureInfo.InvariantCulture));
+                    evalStack.Push((currElement as NumberToken).Value);
+                }
+                else if (currElement is Constant)
+                {
+                    evalStack.Push((currElement as Constant).Value);
                 }
                 else
                 {
-                    int qArgsCurrOperator = GetOperatorArgumentsCount(currElement);
+                    int qArgsCurrOperator = (currElement as Operator).ArgumentsCount;
                     if (evalStack.Count < qArgsCurrOperator)
                     {
-                        throw new InsufficientOperatorArgumentsException("Insufficient arguments count for operator" + " " + currElement + "!" + " " + "Arguments required" + ": " + qArgsCurrOperator.ToString());
+                        throw new InsufficientOperatorArgumentsException("Insufficient arguments count for operator" + " " + currElement.Text + "!" + " " + "Arguments required" + ": " + qArgsCurrOperator.ToString());
                     }
                     else
                     {
@@ -387,7 +437,7 @@ namespace ShuntingYardAlgorithm
                         {
                             currOperatorArgs[j] = evalStack.Pop();
                         }
-                        double currResult = EvaluateOperator(currOperatorArgs, currElement);
+                        double currResult = EvaluateOperator(currOperatorArgs, currElement.Text);
                         evalStack.Push(currResult);
 
                     }
